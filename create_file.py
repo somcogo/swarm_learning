@@ -63,15 +63,19 @@ def createImage(image_size, colour_mode):
     triangle_mask = mask[triangle_ndx, :, :]
     circle_mask = mask[circle_ndx, :, :]
 
+    colour_choice = np.random.permutation(4)
+    mask = mask[colour_choice]
+
     if colour_mode == 'grey':
         img = np.zeros(image_size)
         mask = np.amax(mask, axis=0)
         img[mask] = 1
     elif colour_mode == 'rgb':
         empty_ndx = np.argmax(shape_choice)
+        empty_colour = np.where(colour_choice == empty_ndx)[0][0]
         img = np.zeros([4, h, w])
         img[mask] = 1
-        img = np.delete(img, empty_ndx, 0)
+        img = np.delete(img, empty_colour, 0)
         img = np.transpose(img, (1, 2, 0))
 
     return img, square_mask, triangle_mask, circle_mask
@@ -80,10 +84,10 @@ def generateAndSaveFile(img_dir, image_size, colour_mode):
     img, square_mask, triangle_mask, circle_mask = createImage(image_size, colour_mode)
 
     f = h5py.File(img_dir, 'w')
-    img_ds = f.create_dataset('img', data=img, chunks=True)
-    square_ds = f.create_dataset('square', data=square_mask, chunks=True)
-    triangle_ds = f.create_dataset('triangle', data=triangle_mask, chunks=True)
-    circle_ds = f.create_dataset('square', data=circle_mask, chunks=True)
+    f.create_dataset('img', data=img, chunks=True)
+    f.create_dataset('square', data=square_mask, chunks=True)
+    f.create_dataset('triangle', data=triangle_mask, chunks=True)
+    f.create_dataset('square', data=circle_mask, chunks=True)
     
 # shape = createShape([100,100], 3)
 # img = torch.zeros([200, 200]).numpy()
